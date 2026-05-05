@@ -320,12 +320,14 @@ flag: "" or short note e.g. "amount unclear" "merchant unrecognised" "RMB - need
     });
 
     const data = await resp.json();
+    if (data.error) throw new Error(`API error: ${data.error.type} — ${data.error.message}`);
+    if (!data.content) throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
     const text = data.content.map(b=>b.text||'').join('');
     let parsed;
     try {
       parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
     } catch(e) {
-      throw new Error("Could not parse AI response. Try again.");
+      throw new Error("Could not parse AI response: " + text.slice(0,200));
     }
     rows = parsed.map((r,i)=>({...r,id:i}));
     showPreview();
